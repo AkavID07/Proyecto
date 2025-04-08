@@ -6,48 +6,47 @@
 
 using namespace std;
 
-// Estructura de jugador
-struct Jugador { // Angel
+// Estructura de un jugador
+struct Jugador {
 	string nombre;
 	int puntos = 0;
 };
 
 // Prototipos Utilitarios
-void LimpiarConsola();				 // Angel
-void generarTitulo(const string &);	 // Andony
-void pausarPrograma(const string &); // Andony
+void LimpiarConsola();
+void generarTitulo(const string &);
+void pausarPrograma(const string &);
 
 // Prototipos de validacion
-int validarEntrada(const string &); // Andony
+int validarEntrada(const string &);
 int validarNumJugadores();
-void validarNombreJugador(Jugador *, const int);
+void pedirNombreJugadores(Jugador *, const int);
 int validarPuntajeObtenido(const string &);
 bool pedirContinuar();
 
 // Prototipos del juego
-void dibujarDado(const int); // Eduar
-int LanzarDado();			 // Eduar
+void dibujarDado(const int);
+int LanzarDado();
 
 // Funcion Principal
 int main() {
 	int njugadores, ptsObjetivo, dado, ptsTurno;
 	bool finTurno = false, finJuego = false;
-	Jugador *jugadores = nullptr;
+	Jugador *jugadores = nullptr; // Arreglo de jugadores
 
-	srand(time(NULL)); // Nahomy
+	srand(time(NULL)); // Inicializar la semilla aleatoria
 
 	generarTitulo("Juego de lanza el dado");
 
-	njugadores = validarNumJugadores();
-	jugadores = new Jugador[njugadores]; // crear el espacio para cada jugador
+	njugadores = validarNumJugadores();	 // Validar la cantidad de jugadores
+	jugadores = new Jugador[njugadores]; // Crear arreglo de jugadores
 
-	validarNombreJugador(jugadores, njugadores);
-
+	pedirNombreJugadores(jugadores, njugadores);
 	cout << endl;
-
 	ptsObjetivo = validarPuntajeObtenido("Ingrese el puntaje a alcanzar");
 
 	while (!finJuego) {
+		// Iterar por cada jugador
 		for (int i = 0; i < njugadores; i++) {
 			ptsTurno = 0;
 			finTurno = false;
@@ -64,30 +63,32 @@ int main() {
 
 				if (dado == 1) {
 					cout << ", pierdes todos los puntos obtenidos en este turno.\n\n";
-					ptsTurno = 0;
-					finTurno = true;
+					ptsTurno = 0;	 // Reinicia el puntaje del turno
+					finTurno = true; // Termina el turno
 					pausarPrograma("continuar");
 
 				} else {
-					ptsTurno += dado;
+					ptsTurno += dado; // Sumar el puntaje del dado al puntaje del turno
 					cout << "\n\nBien hecho " << jugadores[i].nombre << " sumaste ";
 					cout << dado << " puntos en este turno.\n";
-					finTurno = pedirContinuar();
+					finTurno = pedirContinuar(); // Pregunta si desea continuar lanzando
 				}
 
 				if ((ptsTurno + jugadores[i].puntos) >= ptsObjetivo) {
+					// Si el jugador alcanza el puntaje objetivo
 					finTurno = true;
 					finJuego = true;
 				}
 			}
 
-			if (!finJuego) {
+			jugadores[i].puntos += ptsTurno;
+
+			if (!finJuego) { // Si el jugador no alcanza el puntaje objetivo
 				generarTitulo("Fin del Turno de " + jugadores[i].nombre);
 				cout << "Total de puntos obtenidos en este turno: " << ptsTurno << endl;
-				jugadores[i].puntos += ptsTurno;
 				cout << "Total de puntos obtenidos: " << jugadores[i].puntos << " / " << ptsObjetivo << endl;
 				pausarPrograma("continuar");
-			} else {
+			} else { // Si el jugador alcanza el puntaje objetivo
 				generarTitulo("Fin del juego");
 				cout << jugadores[i].nombre << " ha alcanzado el puntaje maximo.\n\n";
 				pausarPrograma("salir");
@@ -96,6 +97,7 @@ int main() {
 		}
 	}
 
+	// Limpiar la memoria dinamica
 	delete[] jugadores;
 	jugadores = nullptr;
 
@@ -104,15 +106,17 @@ int main() {
 
 // Funciones Utilitarias
 
-void LimpiarConsola() { // Angel
-#ifdef _WIN32
+void LimpiarConsola() {
+#ifdef _WIN32 // Windows
+
 	system("cls");
-#else
+#else // Linux o MacOS
 	system("clear");
 #endif
 }
 
-void generarTitulo(const string &titulo) { // Andony
+void generarTitulo(const string &titulo) {
+	// Generar un titulo con asteriscos y el nombre del juego centrado
 	const string lineas(titulo.length() * 2, '*');
 
 	LimpiarConsola();
@@ -121,11 +125,11 @@ void generarTitulo(const string &titulo) { // Andony
 	cout << lineas << endl << endl;
 }
 
-void pausarPrograma(const string &mensaje) { // Andony
-#ifdef _WIN32
+void pausarPrograma(const string &mensaje) {
+#ifdef _WIN32 // Windows
 	system("pause");
 	(void)mensaje;
-#else
+#else // Linux o MacOS
 	cout << endl << "Presione una tecla para " << mensaje << "...";
 	cin.get();
 #endif
@@ -133,7 +137,7 @@ void pausarPrograma(const string &mensaje) { // Andony
 
 // Funciones de validacion
 
-int validarEntrada(const string &mensaje) { // Andony
+int validarEntrada(const string &mensaje) {
 	int entrada = 0;
 
 	while (true) {
@@ -142,8 +146,8 @@ int validarEntrada(const string &mensaje) { // Andony
 			if (cin.peek() == '\n') break;
 		}
 
-		cin.clear();
-		cin.ignore(numeric_limits<streamsize>::max(), '\n');
+		cin.clear();										 // Limpiar el estado de error
+		cin.ignore(numeric_limits<streamsize>::max(), '\n'); // Limpiar el buffer de entrada
 		cout << "Entrada no Valida, porfavor ingrese un numero entero." << endl;
 	}
 
@@ -161,18 +165,19 @@ int validarNumJugadores() {
 		cout << "Error: La cantida de jugadores tiene que ser de minimo 2 jugadores y maximo 5.\n\n";
 	}
 
-	cin.ignore(numeric_limits<streamsize>::max(), '\n');
+	cin.ignore(numeric_limits<streamsize>::max(), '\n'); // Limpiar buffer
 
 	return numJugadores;
 }
 
-void validarNombreJugador(Jugador *jugadores, const int cat) {
+void pedirNombreJugadores(Jugador *jugadores, const int cat) {
+	// Pedir los nombre de los jugadores
 	for (int i = 0; i < cat; i++) {
 		while (true) {
 			cout << "\nIngrese el nombre del jugador " << i + 1 << ": ";
 			getline(cin, jugadores[i].nombre);
 
-			if (!(jugadores[i].nombre.length() > 24)) break;
+			if (!(jugadores[i].nombre.length() > 24)) break; // Validar que el nombre no exceda 24 caracteres
 
 			cout << "Error: El nombre no puede tener mas de 24 caracteres. Intentelo de nuevo.\n";
 		}
@@ -188,9 +193,7 @@ int validarPuntajeObtenido(const string &mensaje) {
 
 		cout << "Error: la cantidad del puntaje objetivo tiene que ser mayor o igual a 10." << endl;
 	}
-
-	// Limpiar buffer
-	cin.ignore(numeric_limits<streamsize>::max(), '\n');
+	cin.ignore(numeric_limits<streamsize>::max(), '\n'); // Limpiar buffer
 
 	return puntajeMeta;
 }
@@ -202,8 +205,8 @@ bool pedirContinuar() {
 		cout << "Deseas lanzar de nuevo? (S/N): ";
 		getline(cin, entrada);
 
-		if (!entrada.empty()) {
-			char respuesta = tolower(entrada[0]);
+		if (!entrada.empty()) {					  // Verificar que la entrada no esté vacía
+			char respuesta = tolower(entrada[0]); // convertir a minuscula
 
 			if (respuesta == 's' || respuesta == 'n') {
 				return (respuesta != 's');
@@ -215,7 +218,8 @@ bool pedirContinuar() {
 
 // Funciones del juego
 
-void dibujarDado(const int cara) { // Eduar
+void dibujarDado(const int cara) {
+	// Dibuja un dado en la consola dependiendo de la cara que se le pase como argumento
 	cout << endl << " ------- " << endl;
 	switch (cara) {
 	case 1:
@@ -252,8 +256,8 @@ void dibujarDado(const int cara) { // Eduar
 	cout << " ------- " << endl << endl;
 }
 
-int LanzarDado() { // Eduar o Nohemy
-	int dado = 1 + rand() % 6;
+int LanzarDado() {
+	int dado = 1 + rand() % 6; // Generar un número aleatorio entre 1 y 6
 	dibujarDado(dado);
 	return dado;
 }
